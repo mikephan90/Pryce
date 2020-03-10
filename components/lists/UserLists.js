@@ -18,8 +18,7 @@ export default class UserLists extends Component {
     listStale: true,
     readyToFetch: false,
     readyToRender: false,
-    baseApiUrl: 'http://192.168.1.100:5000',
-    //baseApiUrl: 'https://pryce-cs467.appspot.com',
+    baseApiUrl: 'https://pryce-cs467.appspot.com',
   };
 
   setUser(){

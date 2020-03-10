@@ -15,8 +15,7 @@ class ListDetails extends Component {
     super(props);
     
     this.state = {
-      baseApiUrl: 'http://192.168.1.100:5000',
-      //baseApiUrl: 'https://pryce-cs467.appspot.com',
+      baseApiUrl: 'https://pryce-cs467.appspot.com',
       tableData: null,
       page: 0,
       perPage: 8,
