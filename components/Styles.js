@@ -188,25 +188,29 @@ export const styles = StyleSheet.create({
 		flex: 1,	
 		flexShrink: 2,
 	},
-	listDetailsTrashColumn: {
-		flex: 0,	
-		width: 30,
-		paddingRight: 20,
+	listDetailsQauntityColumn: {
+		flex: 1,	
+		paddingLeft: 10,
+		paddingRight: 10,
 		alignContent: 'center',
 	 },
+	 listDetailsTrashColumn: {
+		flex: 0,
+		alignItems: 'center',
+		paddingLeft: 10,
+	},
 	listDetailsPriceColumn: {
 		flex: 0,	
 		width: 50,
 		alignContent: 'center',
 	},
 	listDetailsStoreColumn: {
-		flex: 1,	
+		flex: 2,	
 		flexShrink: 1,
 		paddingLeft: 10
 	},
 	listDetailsNameColumn: {
-		flex: 1,	
-		flexShrink: 1,
+		flex: 3,	
 	},
 	/*
      * Login

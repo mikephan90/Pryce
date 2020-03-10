@@ -15,7 +15,8 @@ class ListDetails extends Component {
     super(props);
     
     this.state = {
-      baseApiUrl: 'https://pryce-cs467.appspot.com',
+      baseApiUrl: 'http://192.168.1.100:5000',
+      //baseApiUrl: 'https://pryce-cs467.appspot.com',
       tableData: null,
       page: 0,
       perPage: 8,
@@ -43,6 +44,23 @@ class ListDetails extends Component {
     }
   }
 
+  _getListItemIds()
+  {
+    let itemIds = this.state.listItemIds;
+    if(!itemIds){
+      //https://stackoverflow.com/a/4215753/148680
+      let reducer = (itemIds, item, i) => { return {...itemIds, [item.item_id]: item.item_id } };
+      itemIds = this.state.tableData.reduce(reducer, {});
+      this.setState( { listItemIds: itemIds} ); 
+    }
+    return itemIds;
+  }
+
+  promptOnDuplicate(item)
+  {
+    return true
+  }
+
   addItemFromSearch()
   {
     /*if we're coming back from Search->ItemInfo->ItemDetail, check for added item*/
@@ -52,21 +70,47 @@ class ListDetails extends Component {
       if(addedItem)
       {
         let backingArray = this.state.tableData;
+        //get item_ids object
+        let itemIds = this._getListItemIds();
+        
+        //check for duplicates and prompt to add if so
+        let isDupe = addedItem.item_id in itemIds;
+        let dupeChoice = false; 
+        if(isDupe)
+          dupeChoice = this.promptOnDuplicate(addedItem)
+      
+        //no duplicate or if we want to add even though there's a duplicate 
+        if ( !isDupe || (isDupe && dupeChoice) ) 
+        { 
+          //deal with local array by incrementing quantity (or not)
+          if(isDupe) {
+            for(let i = 0; i < backingArray.length; i++)
+            {
+              if(backingArray[i].item_id === addedItem.item_id)
+                backingArray[i].quantity++;
+                addedItem.quantity = backingArray[i].quantity; 
+            }
+          }
+          else {
+            addedItem.quantity = 1;
+            backingArray.push(addedItem);
+          }
+          this.setState({ tableData: backingArray });
+          itemIds[addedItem.itemId] = addedItem.itemId;
+          this.setState({ listItemIds: itemIds });
 
-        backingArray.push(addedItem);
-          //Array.of(addedItem.item_name, addedItem.price, addedItem.store_name, addedItem.reported, addedItem.item_id));
-        this.setState({ tableData: backingArray });
-
-        //clear addedItem and add item to db
-        this.props.navigation.setParams({addedItem: null});
-        this.addItemToList(addedItem, this.props.navigation.state.params.pryceListId);
+          //clear addedItem and add item to db
+          this.props.navigation.setParams({addedItem: null});
+          this.addItemToList(addedItem, this.props.navigation.state.params.pryceListId);
+        }
       }
     }
     else
       console.log("Info: in ListDetails.addItemFromSearch(); no 'routeFrom' in navigation params");
   }
 
-  addItemToList = async(itemObj, plid) => {
+
+  addItemToList = async(itemObj, plid, isDupe) => {
     let token = this.state.authToken;
     console.log("authToken in addItemToList: " + token);
     let url = this.state.baseApiUrl + '/pryce_lists/' + plid;
@@ -78,7 +122,7 @@ class ListDetails extends Component {
 				'Accept': 'application/json',
         'Authorization': "Bearer " + token
       },
-      body: JSON.stringify(itemObj),
+      body: JSON.stringify({item_id: itemObj.item_id, quantity: itemObj.quantity } ),
     })
     .then(response => response.json())
     .then(responseJson => { 
@@ -157,9 +201,13 @@ class ListDetails extends Component {
     //delete row that corresponds to item
     backingArray.splice(rowIndex, 1);
     this.setState({tableData: backingArray});
+    //update itemIds
+    let itemIds = this._getListItemIds
+    itemIds.splice(itemId, 1);
+    this.setState({listItemIds: itemIds});
   }
 
-_getListItemDetails = async () => {
+  _getListItemDetails = async () => {
     let result = true; 
 		let url = this.state.baseApiUrl + '/pryce_lists/details/' + this.state.pryceListId;
     console.log("url in _getListItemDetails: " + url);
@@ -195,14 +243,15 @@ _getListItemDetails = async () => {
     {
       return (
         <SafeAreaView style={{flex: 9, flexDirection: 'column'}}>
-          <Card radius={1} shadow={1} style={{ maxWidth: 400, width: '100%', flex: 8}}>
+          <Card radius={1} shadow={1} style={{flexDirection: 'column', width: '100%', flex: 8}}>
             <CardHeader title={this.state.pryceListName} />
             <DataTable>
               <DataTable.Header>
                 <DataTable.Title style={styles.listDetailsNameColumn}>Item</DataTable.Title>
+                <DataTable.Title style={styles.listDetailsQuantityColumn} numeric >Quant.</DataTable.Title>
                 <DataTable.Title style={styles.listDetailsPriceColumn} numeric >Price</DataTable.Title>
-                <DataTable.Title >Location</DataTable.Title>
-                <DataTable.Title style={{flex: 1}}></DataTable.Title>
+                <DataTable.Title style={styles.listDetailsStoreColumn}>Location</DataTable.Title>
+                <DataTable.Title style={styles.listDetailsTrashColumn}></DataTable.Title>
               </DataTable.Header>
               {this.state.tableData
                 .slice(
@@ -212,10 +261,11 @@ _getListItemDetails = async () => {
                 .map((item, index) => (
                   <DataTable.Row key={item.item_id} >
                     <DataTable.Cell style={styles.listDetailsNameColumn}>{item.item_name}</DataTable.Cell>
+                    <DataTable.Cell style={styles.listDetailsQuantityColumn} numeric>{item.quantity}</DataTable.Cell>
                     <DataTable.Cell style={styles.listDetailsPriceColumn} numeric>{item.price}</DataTable.Cell>
                     <DataTable.Cell style={styles.listDetailsStoreColumn}>{item.store_name}</DataTable.Cell>
-                    <DataTable.Cell numeric style={styles.listDetailsIconColumn}>
-                        <FeatherIcon name='trash' style={styles.button} onPress={() => this.deleteItem(item.item_id, index)} />
+                    <DataTable.Cell style={styles.listDetailsTrashColumn}>
+                        <FeatherIcon name='trash' onPress={() => this.deleteItem(item.item_id, index)} />
                     </DataTable.Cell>
                   </DataTable.Row>
                 ))}
