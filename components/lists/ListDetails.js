@@ -85,9 +85,10 @@ class ListDetails extends Component {
           if(isDupe) {
             for(let i = 0; i < backingArray.length; i++)
             {
-              if(backingArray[i].item_id === addedItem.item_id)
+              if(backingArray[i].item_id === addedItem.item_id) {
                 backingArray[i].quantity++;
                 addedItem.quantity = backingArray[i].quantity; 
+              }
             }
           }
           else {
@@ -202,7 +203,7 @@ class ListDetails extends Component {
     this.setState({tableData: backingArray});
     //update itemIds
     let itemIds = this._getListItemIds
-    itemIds.splice(itemId, 1);
+    delete itemIds[itemId];
     this.setState({listItemIds: itemIds});
   }
 
