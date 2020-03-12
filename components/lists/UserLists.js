@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 //https://github.com/shimohq/react-native-prompt-android/issues/45
-import { Alert, ActivityIndicator, AsyncStorage, Text, View } from 'react-native';
+//import { Alert, ActivityIndicator, AsyncStorage, Text, View } from 'react-native';
+import Dialog from 'react-native-dialog';
+import { ActivityIndicator, AsyncStorage, Text, View } from 'react-native';
 import { DataTable } from 'react-native-paper';
 import { DataTablePagination } from 'material-bread';
 import { withNavigation } from 'react-navigation';
@@ -18,7 +20,15 @@ export default class UserLists extends Component {
     listStale: true,
     readyToFetch: false,
     readyToRender: false,
+    //for android fix
+    dialogVisible: false, 
+    newListName: null,
     baseApiUrl: 'https://pryce-cs467.appspot.com',
+  };
+
+
+  showDialog = () => {
+    this.setState({ dialogVisible: true });
   };
 
   setUser(){
@@ -198,13 +208,20 @@ export default class UserLists extends Component {
           </DataTable>
         </Card>
         <View style={{ flex: 2, flexDirection: 'row', justifyContent: 'space-around' }}> 
-          
-         <Button text={'New List'} style={styles.button} onPress={ () => {
-              Alert.prompt('New List Name', 'Please provide a name for your new list.', (name) => {
-                        this.postNewList(name) 
-                  } ) } 
-          } type="outlined" />
-        </View>
+  
+
+          <Button text={'New List'} style={styles.button} onPress={ this.showDialog } type='outlined'/>
+         
+          <Dialog.Container visible={this.state.dialogVisible}>
+              <Dialog.Title>New List</Dialog.Title>
+              <Dialog.Description>
+                Testing. Please provide a name for your new list.
+              </Dialog.Description>
+              <Dialog.Input onChangeText={() => this.state.newListName}/> 
+              <Dialog.Button label="OK" onPress={this.postNewList(this.state.newListName)} />
+              <Dialog.Button label="Cancel"/>
+        </Dialog.Container> 
+        </View>   
       </SafeAreaView>
 
     );
