@@ -15,7 +15,7 @@
     "asyncstorage": "^1.5.0",
     "expo": "^36.0.2",
     "expo-barcode-scanner": "^8.0.0",
-    "expo-cli": "^3.13.1",
+    "expo-cli": "^6.0.6",
     "ionicons": "^5.0.0",
     "link": "^0.1.5",
     "material-bread": "^0.2.5",
